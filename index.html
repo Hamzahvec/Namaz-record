@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Namaz Record</title>
+    <title>To-Do App</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -109,21 +109,39 @@
         const input = document.getElementById('todo-input');
         const list = document.getElementById('todo-list');
 
+        // Load saved tasks from localStorage
+        const savedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        savedTasks.forEach(task => {
+            addTaskToList(task.text, task.completed);
+        });
+
         form.addEventListener('submit', (event) => {
             event.preventDefault();
 
             const taskText = input.value;
+            addTaskToList(taskText, false);
+            saveTasks();
+
+            input.value = '';
+        });
+
+        function addTaskToList(taskText, isCompleted) {
             const listItem = document.createElement('li');
 
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
+            checkbox.checked = isCompleted;
             checkbox.addEventListener('change', () => {
                 taskSpan.classList.toggle('completed');
+                saveTasks();
             });
             listItem.appendChild(checkbox);
 
             const taskSpan = document.createElement('span');
             taskSpan.textContent = taskText;
+            if (isCompleted) {
+                taskSpan.classList.add('completed');
+            }
             listItem.appendChild(taskSpan);
 
             const deleteButton = document.createElement('button');
@@ -131,12 +149,22 @@
             deleteButton.className = 'delete';
             deleteButton.addEventListener('click', () => {
                 list.removeChild(listItem);
+                saveTasks();
             });
             listItem.appendChild(deleteButton);
 
             list.appendChild(listItem);
-            input.value = '';
-        });
+        }
+
+        function saveTasks() {
+            const tasks = [];
+            list.querySelectorAll('li').forEach(listItem => {
+                const taskText = listItem.querySelector('span').textContent;
+                const isCompleted = listItem.querySelector('input[type="checkbox"]').checked;
+                tasks.push({ text: taskText, completed: isCompleted });
+            });
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
     </script>
 </body>
 </html>
